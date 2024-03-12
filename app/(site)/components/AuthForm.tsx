@@ -3,6 +3,9 @@ import Button from '@/app/components/Button';
 import Input from '@/app/components/input/Input';
 import React, { useCallback, useState } from 'react'
 import { FieldValues, SubmitHandler, useForm } from 'react-hook-form';
+import AuthSocialButton from '@/app/(site)/components/AuthSocialButton';
+import { FcGoogle } from 'react-icons/fc';
+import { FaGithub } from 'react-icons/fa6';
 
 type variant = "LOGIN" | "REGISTER";
 
@@ -48,13 +51,35 @@ const AuthForm = () => {
         <div className='mt-8 sm:mx-auto sm:w-full sm:max-w-md'>
             <div className="bg-white px-4 py-8 shadow sm:rounded-lg sm:px-10">
                 <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-                    {variant==="REGISTER" && (
-                        <Input id='name' label='Name' register={register} errors={errors}/>
+                    {variant === "REGISTER" && (
+                        <Input id='name' label='Name' register={register} errors={errors} disabled={isLoading} />
                     )}
-                    <Input id='email' label='Email' type='email' register={register} errors={errors}/>
-                    <Input id='password' label='Password' type='password' register={register} errors={errors}/>
-                    <Button type='submit'>Submit</Button>
+                    <Input id='email' label='Email' type='email' register={register} errors={errors} disabled={isLoading} />
+                    <Input id='password' label='Password' type='password' register={register} errors={errors} disabled={isLoading} />
+                    <Button type='submit' disabled={isLoading} fullWidth>{variant === "LOGIN" ? "Login" : "Register"}</Button>
                 </form>
+                <div className="mt-6">
+                    <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-gray-300" />
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                            <span className="bg-white px-2 text-gray-500">or continue with</span>
+                        </div>
+                    </div>
+                    <div className="mt-6 flex gap-2">
+                        <AuthSocialButton onClick={() => socialActions("github")} icon={FaGithub} />
+                        <AuthSocialButton onClick={() => socialActions("google")} icon={FcGoogle} />
+                    </div>
+                </div>
+                <div className='flex gap-2 justify-center text-sm mt-6 px-2 text-gray-500'>
+                    <div>
+                        {variant==="LOGIN"? "New to Messenger?":"Already have an account!"}
+                    </div>
+                    <div className="underline cursor-pointer" onClick={toggleVariant}>
+                        {variant==="LOGIN"? "Create an account":"Login"}
+                    </div>
+                </div>
             </div>
         </div>
     )
