@@ -33,11 +33,11 @@ const AuthForm = () => {
         setIsLoading(true);
         if (variant === "REGISTER") {
             // Axios API call
-            axios.post("/api/register", data).then((res)=>{
+            axios.post("/api/register", data).then((res) => {
                 toast.success("Account Created Successfully")
-            }).catch((err)=>{
+            }).catch((err) => {
                 toast.error("Something went wrong")
-            }).finally(()=>{
+            }).finally(() => {
                 setIsLoading(false);
             })
         }
@@ -47,15 +47,15 @@ const AuthForm = () => {
             signIn("credentials", {
                 ...data,
                 redirect: false
-            }).then((callback)=>{
-                if(callback?.error){
+            }).then((callback) => {
+                if (callback?.error) {
                     console.log(callback.error)
                     toast.error("Invalid credentials")
                 }
-                if(callback?.ok && !callback?.error){
+                if (callback?.ok && !callback?.error) {
                     toast.success("Logged in Successfully")
                 }
-            }).finally(()=>{
+            }).finally(() => {
                 setIsLoading(false);
             })
         }
@@ -63,10 +63,18 @@ const AuthForm = () => {
 
     const socialActions = (actions: string) => {
         setIsLoading(true);
-
         // Next-Auth social sign In
-
-        setIsLoading(false);
+        signIn(actions, { redirect: false }).then((callback) => {
+            if (callback?.error) {
+                console.log(callback.error)
+                toast.error("Invalid credentials")
+            }
+            if (callback?.ok && !callback?.error) {
+                toast.success("Logged in Successfully")
+            }
+        }).finally(() => {
+            setIsLoading(false);
+        })
     }
 
     return (
@@ -96,10 +104,10 @@ const AuthForm = () => {
                 </div>
                 <div className='flex gap-2 justify-center text-sm mt-6 px-2 text-gray-500'>
                     <div>
-                        {variant==="LOGIN"? "New to Messenger?":"Already have an account!"}
+                        {variant === "LOGIN" ? "New to Messenger?" : "Already have an account!"}
                     </div>
                     <div className="underline cursor-pointer" onClick={toggleVariant}>
-                        {variant==="LOGIN"? "Create an account":"Login"}
+                        {variant === "LOGIN" ? "Create an account" : "Login"}
                     </div>
                 </div>
             </div>
