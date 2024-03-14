@@ -6,6 +6,9 @@ import { FieldValues, SubmitHandler, useForm } from 'react-hook-form';
 import AuthSocialButton from '@/app/(site)/components/AuthSocialButton';
 import { FcGoogle } from 'react-icons/fc';
 import { FaGithub } from 'react-icons/fa6';
+import axios from 'axios';
+import toast from 'react-hot-toast';
+import { signIn } from 'next-auth/react';
 
 type variant = "LOGIN" | "REGISTER";
 
@@ -30,13 +33,32 @@ const AuthForm = () => {
         setIsLoading(true);
         if (variant === "REGISTER") {
             // Axios API call
+            axios.post("/api/register", data).then((res)=>{
+                toast.success("Account Created Successfully")
+            }).catch((err)=>{
+                toast.error("Something went wrong")
+            }).finally(()=>{
+                setIsLoading(false);
+            })
         }
 
         else if (variant === "LOGIN") {
             // Next-Auth Login
+            signIn("credentials", {
+                ...data,
+                redirect: false
+            }).then((callback)=>{
+                if(callback?.error){
+                    console.log(callback.error)
+                    toast.error("Invalid credentials")
+                }
+                if(callback?.ok && !callback?.error){
+                    toast.success("Logged in Successfully")
+                }
+            }).finally(()=>{
+                setIsLoading(false);
+            })
         }
-
-        setIsLoading(false);
     }
 
     const socialActions = (actions: string) => {
