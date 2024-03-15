@@ -1,20 +1,30 @@
 "use client"
 import Button from '@/app/components/Button';
 import Input from '@/app/components/input/Input';
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { FieldValues, SubmitHandler, useForm } from 'react-hook-form';
 import AuthSocialButton from '@/app/(site)/components/AuthSocialButton';
 import { FcGoogle } from 'react-icons/fc';
 import { FaGithub } from 'react-icons/fa6';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 type variant = "LOGIN" | "REGISTER";
 
 const AuthForm = () => {
+    const session = useSession();
+    const router = useRouter();
     const [variant, setVariant] = useState<variant>("LOGIN");
     const [isLoading, setIsLoading] = useState<boolean>(false);
+
+    useEffect(()=>{
+        if(session?.status === "authenticated"){
+            router.push("users");
+            console.log("Authenticated");
+        }
+    },[session?.status, router]);
 
     const toggleVariant = useCallback(() => {
         if (variant === "LOGIN") setVariant("REGISTER");
@@ -34,7 +44,7 @@ const AuthForm = () => {
         if (variant === "REGISTER") {
             // Axios API call
             axios.post("/api/register", data).then((res) => {
-                toast.success("Account Created Successfully")
+                signIn("credentials", data)
             }).catch((err) => {
                 toast.error("Something went wrong")
             }).finally(() => {
@@ -53,7 +63,8 @@ const AuthForm = () => {
                     toast.error("Invalid credentials")
                 }
                 if (callback?.ok && !callback?.error) {
-                    toast.success("Logged in Successfully")
+                    toast.success("Logged in Successfully");
+                    router.push("users");
                 }
             }).finally(() => {
                 setIsLoading(false);
