@@ -15,7 +15,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en">
       <head>
-        <link rel='icon' href='./favicon.ico' />
+        <link rel='icon' href='/images/favicon.ico' />
       </head>
       <body className={inter.className}>
         <AuthContext>
