@@ -10,6 +10,7 @@ interface UserBoxProps {
 }
 
 const UserBox: React.FC<UserBoxProps> = ({ data }) => {
+
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -18,7 +19,7 @@ const UserBox: React.FC<UserBoxProps> = ({ data }) => {
     axios.post("/api/conversations", {
       userId: data.id
     }).then((res) => {
-      router.push(`/conversation/${res.data.id}`)
+      router.push(`/conversations/${res.data.id}`)
     }).finally(() => setIsLoading(false))
   }, [data, router])
 
