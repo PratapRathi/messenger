@@ -8,6 +8,7 @@ import clsx from "clsx";
 import { FullConversationType } from "@/app/types";
 import useOtherUser from "@/app/hooks/useOtherUser";
 import Avatar from "@/app/components/Avatar";
+import AvatarGroup from "@/app/components/AvatarGroup";
 
 
 interface ConversationBoxProps {
@@ -34,34 +35,26 @@ const ConversationBox: React.FC<ConversationBoxProps> = ({ data, selected }) => 
         return session?.data?.user?.email
     }, [session?.data?.user?.email])
 
-    const hasSeen = useMemo(()=>{
-        if(!lastMessage) return false;
-        if(!userEmail) return false;
+    const hasSeen = useMemo(() => {
+        if (!lastMessage) return false;
+        if (!userEmail) return false;
         const seenArray = lastMessage.seen || []
-        return seenArray.filter((user)=> user.email === userEmail).length !== 0;
-    },[userEmail, lastMessage]);
+        return seenArray.filter((user) => user.email === userEmail).length !== 0;
+    }, [userEmail, lastMessage]);
 
-    const lastMessageText = useMemo(()=>{
-        if(lastMessage?.image) return "Sent an image";
-        if(lastMessage?.body) return lastMessage.body;
+    const lastMessageText = useMemo(() => {
+        if (lastMessage?.image) return "Sent an image";
+        if (lastMessage?.body) return lastMessage.body;
         return "Started new chat"
-    },[lastMessage]);
+    }, [lastMessage]);
 
     return (
         <div onClick={handleClick} className={clsx(`
-            w-full 
-            relative 
-            flex 
-            items-center 
-            space-x-3 
-            p-3 
-            hover:bg-neutral-100
-            rounded-lg
-            transition
-            cursor-pointer`,
-            selected? "bg-neutral-100" : "bg-white"
+            w-full relative flex items-center space-x-3 p-3 
+            hover:bg-neutral-100 rounded-lg transition cursor-pointer`,
+            selected ? "bg-neutral-100" : "bg-white"
         )}>
-            <Avatar user={otherUser}/>
+            {data.isGroup ? (<AvatarGroup users={data.users}/>) : (<Avatar user={otherUser} />)}
             <div className="min-w-0 flex-1">
                 <div className="focus:outline-none">
                     <div className="flex justify-between items-center mb-1">
@@ -74,7 +67,7 @@ const ConversationBox: React.FC<ConversationBoxProps> = ({ data, selected }) => 
                             </p>
                         )}
                     </div>
-                    <p className={clsx(`truncate text-sm`, hasSeen? "text-gray-500" : "text-black font-medium")}>
+                    <p className={clsx(`truncate text-sm`, hasSeen ? "text-gray-500" : "text-black font-medium")}>
                         {lastMessageText}
                     </p>
                 </div>

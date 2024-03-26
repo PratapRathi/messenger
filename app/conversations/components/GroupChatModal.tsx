@@ -36,8 +36,9 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({isOpen, onClose, users})
         axios.post("/api/conversations", {isGroup: true, ...data}).then(()=>{
             router.refresh();
             onClose();
-        }).catch(()=>{
-            toast.error("Something went wrong")
+        }).catch(({response})=>{
+            response.data === "Invalid Data" ? toast.error("Please Select at least 2 member") : 
+            toast.error("Something went wrong");
         }).finally(()=>{
             setIsLoading(false);
         })
