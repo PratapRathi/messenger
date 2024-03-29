@@ -5,9 +5,12 @@ import useConversation from '@/app/hooks/useConversation'
 import { FullConversationType } from '@/app/types'
 import { MdOutlineGroupAdd } from 'react-icons/md'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import clsx from 'clsx'
 import { User } from '@prisma/client'
+import { useSession } from 'next-auth/react'
+import { pusherClient } from '@/app/libs/pusher'
+import { find } from 'lodash'
 
 interface ConversationListProps {
     initialItems: FullConversationType[],
@@ -15,13 +18,49 @@ interface ConversationListProps {
 }
 
 const ConversationList: React.FC<ConversationListProps> = ({ initialItems, users }) => {
+    const session = useSession();
     const [items, setItems] = useState(initialItems);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const router = useRouter();
     const { conversationId, isOpen } = useConversation();
+
+    const pusherKey = useMemo(() => {
+        return session?.data?.user?.email;
+    }, [session?.data?.user?.email]);
+
+    useEffect(() => {
+        if (!pusherKey) return;
+        pusherClient.subscribe(pusherKey);
+
+        const newConversationHandler = (conversation: FullConversationType) => {
+            setItems((current) => {
+                if (find(current, conversation.id)) return current;
+                return [conversation, ...current];
+            })
+        }
+
+        const updateConversationHandler = (conversation: FullConversationType) => {
+            setItems((current) => current.map((currentConversation) => {
+                if (currentConversation.id === conversation.id) {
+                    return { ...currentConversation, messages: conversation.messages }
+                }
+                return currentConversation;
+            }))
+        }
+
+        pusherClient.bind("conversation-new", newConversationHandler);
+        pusherClient.bind("conversation:update", updateConversationHandler);    
+
+        return () => {
+            pusherClient.unsubscribe(pusherKey);
+            pusherClient.unbind("conversation-new", newConversationHandler);
+            pusherClient.unbind("conversation:update", updateConversationHandler);
+        }
+    }, [pusherKey]);
+
     return (
         <>
-            <GroupChatModal users={users} onClose={()=>setIsModalOpen(false)} isOpen={isModalOpen} />
+            <GroupChatModal users={users} onClose={() => setIsModalOpen(false)} isOpen={isModalOpen} />
             <aside className={clsx(`
             fixed inset-y-0  pb-20 lg:pb-0 lg:left-20 lg:w-80 
             lg:block overflow-y-auto  border-r  border-gray-200`,
