@@ -33,6 +33,13 @@ Key Features:
 
 **Node version 14.x**
 
+
+### Live Deployed at
+
+```shell
+https://messenger-pratap.vercel.app/
+```
+
 ### Cloning the repository
 
 ```shell
