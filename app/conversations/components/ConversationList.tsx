@@ -34,7 +34,7 @@ const ConversationList: React.FC<ConversationListProps> = ({ initialItems, users
 
         const newConversationHandler = (conversation: FullConversationType) => {
             setItems((current) => {
-                if (find(current, conversation.id)) return current;
+                if (find(current, {id:conversation.id})) return current;
                 return [conversation, ...current];
             })
         }
