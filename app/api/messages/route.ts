@@ -5,8 +5,8 @@ import { pusherServer } from "@/app/libs/pusher";
 
 export async function POST(request: Request) {
     try {
-        const currentUser = await getCurrentUser();
-        const body = await request.json();
+        const [currentUser, body] = await Promise.all([getCurrentUser(), request.json()]);
+
         const { message, image, conversationId } = body;
         if (!currentUser?.id || !currentUser?.email) return new NextResponse("UnAuthorized", { status: 401 });
 
@@ -30,26 +30,30 @@ export async function POST(request: Request) {
             }
         })
 
-        const updatedConversation = await prisma.conversation.update({
-            where: { id: conversationId },
-            data: {
-                lastMessageAt: new Date(),
-                messages: {
-                    connect: { id: newMessage.id }
+        const [pusherResult, updatedConversation] = await Promise.all([
+            pusherServer.trigger(conversationId, "messages:new", newMessage),
+            prisma.conversation.update({
+                where: { id: conversationId },
+                data: {
+                    lastMessageAt: new Date(),
+                    messages: {
+                        connect: { id: newMessage.id }
+                    }
+                },
+                include: {
+                    users: true,
+                    messages: {
+                        include: { seen: true },
+                        orderBy: { createdAt: 'desc' },
+                        take: 1
+                    }
                 }
-            },
-            include: {
-                users: true,
-                messages: {
-                    include: {seen: true}
-                }
-            }
-        })
+            })
+        ]);
 
-        await pusherServer.trigger(conversationId, "messages:new", newMessage);
-        const lastMessage = updatedConversation.messages[updatedConversation.messages.length-1];
+        const lastMessage = updatedConversation.messages[updatedConversation.messages.length - 1];
 
-        updatedConversation.users.map((user)=>{
+        updatedConversation.users.map((user) => {
             pusherServer.trigger(user.email!, "conversation:update", {
                 id: conversationId,
                 messages: [lastMessage]
